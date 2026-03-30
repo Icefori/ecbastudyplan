@@ -1,0 +1,2486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECBA Study Plan — NotebookLM</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ink: #1a1410;
+    --paper: #f7f3ec;
+    --cream: #ede8df;
+    --rust: #c0440a;
+    --gold: #b8860b;
+    --lavender: #5b4a8a;
+    --moss: #3d6b3b;
+    --border: #c8bfb0;
+    --muted: #7a7060;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    padding: 0 0 80px;
+  }
+
+  /* HEADER */
+  .hero {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 52px 40px 44px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(255,255,255,.03) 8px, rgba(255,255,255,.03) 9px);
+  }
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: 'Jost', sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -.01em;
+    margin-bottom: 16px;
+  }
+  .hero-sub {
+    color: #b8ad9e;
+    font-style: italic;
+    font-size: 15px;
+    max-width: 620px;
+  }
+  .hero-meta {
+    display: flex; gap: 32px; margin-top: 28px; flex-wrap: wrap;
+  }
+  .meta-item {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #9a9080;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .meta-val {
+    font-size: 20px;
+    color: var(--paper);
+    font-family: 'Jost', sans-serif;
+    font-weight: 700;
+  }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    position: sticky;
+    top: 0; z-index: 100;
+    background: var(--ink);
+    padding: 10px 28px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.4);
+  }
+  .progress-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #9a9080;
+    flex-shrink: 0;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255,255,255,.15);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), #e8a030);
+    border-radius: 4px;
+    transition: width .4s ease;
+    width: 0%;
+  }
+  .progress-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    flex-shrink: 0;
+    min-width: 36px;
+    text-align: right;
+    font-weight: 500;
+  }
+
+  /* LAYOUT */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* FORMAT LEGEND */
+  .legend {
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0;
+  }
+  .legend .container { display: flex; flex-direction: column; gap: 16px; }
+  .legend-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .fmt-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .fmt-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .fmt-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+  .fmt-desc { font-size: 13px; color: var(--muted); line-height: 1.45; }
+
+  /* PHASES */
+  .phases { padding: 36px 0; }
+
+  .phase { margin-bottom: 40px; }
+  .phase-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .phase-num {
+    width: 36px; height: 36px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+  }
+  .phase-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .phase-name {
+    font-family: 'Jost', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .phase-badge {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .phase-toggle { font-size: 16px; color: var(--muted); margin-left: 8px; transition: transform .2s; }
+  .phase.collapsed .phase-toggle { transform: rotate(-90deg); }
+  .phase-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 6px 0 14px 50px;
+    font-style: italic;
+  }
+  .phase-body.hidden { display: none; }
+
+  .weight-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--rust);
+    color: white;
+    margin-left: 8px;
+    font-weight: 500;
+  }
+  .new-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--moss);
+    color: white;
+    margin-left: 8px;
+  }
+
+  /* SESSIONS */
+  .session {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    background: var(--paper);
+    transition: box-shadow .15s;
+  }
+  .session:hover { box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .session-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 16px;
+    cursor: pointer;
+  }
+  .session-check {
+    width: 22px; height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+    font-size: 12px;
+    color: transparent;
+  }
+  .session.done .session-check {
+    background: var(--moss);
+    border-color: var(--moss);
+    color: white;
+  }
+  .session-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    flex-shrink: 0;
+    min-width: 36px;
+  }
+  .session-title {
+    font-weight: 600;
+    font-size: 14px;
+    flex: 1;
+    line-height: 1.3;
+  }
+  .session-pages {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .session-formats {
+    display: flex; gap: 4px; flex-shrink: 0; flex-wrap: wrap;
+  }
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .badge-podcast { background: #fef3e2; color: #9a5800; border: 1px solid #f0d090; }
+  .badge-guide   { background: #e8f4f0; color: #1d5c4a; border: 1px solid #a8d8c8; }
+  .badge-brief   { background: #eef2fb; color: #2d4a8a; border: 1px solid #b0c4e8; }
+  .badge-quiz    { background: #f5f0fa; color: #4a2d8a; border: 1px solid #c8b8e8; }
+  .badge-flash   { background: #fdf0f0; color: #8a2d2d; border: 1px solid #e8b8b8; }
+  .badge-chat    { background: #f0f7f0; color: #2d5a2d; border: 1px solid #b0d8b0; }
+
+  .session-expand { font-size: 13px; color: var(--muted); transition: transform .2s; }
+  .session.open .session-expand { transform: rotate(180deg); }
+
+  .session-body {
+    border-top: 1px solid var(--border);
+    padding: 18px 20px 20px;
+    display: none;
+    background: #faf7f2;
+  }
+  .session.open .session-body { display: block; }
+
+  /* SECTION LABELS */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  .goal-list {
+    list-style: none;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .goal-list li::before { content: '→ '; color: var(--rust); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+  }
+
+  /* FORMAT BLOCKS */
+  .format-block {
+    margin-top: 8px;
+    margin-bottom: 14px;
+  }
+  .format-block-header {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 7px;
+    letter-spacing: .01em;
+  }
+
+  /* BIG BLACK PROMPT (podcast, briefing) */
+  .prompt-box {
+    background: var(--ink);
+    color: #d4cfc8;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    padding: 16px 44px 16px 16px;
+    white-space: pre-wrap;
+    position: relative;
+    border-radius: 4px;
+  }
+  .prompt-box .hl { color: #f0d090; }
+  .copy-btn {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    color: #9a9080;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: .04em;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,.15); color: var(--paper); }
+
+  /* LIGHT COPY BOX (quiz, study guide, flashcards) */
+  .light-prompt {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 44px 12px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    position: relative;
+    color: var(--ink);
+  }
+  .light-copy-btn {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .light-copy-btn:hover { background: var(--border); color: var(--ink); }
+
+  /* DIFFICULTY HINT */
+  .diff-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--lavender);
+    margin-left: 8px;
+    font-weight: 500;
+  }
+
+  /* CHAT PROMPTS */
+  .chat-prompts { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+  .chat-q {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 44px 10px 13px;
+    font-size: 13px;
+    font-style: italic;
+    line-height: 1.55;
+    cursor: pointer;
+    transition: background .12s;
+    position: relative;
+  }
+  .chat-q:hover { background: var(--cream); }
+  .chat-q::after {
+    content: 'COPY';
+    position: absolute;
+    top: 8px; right: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--cream);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  /* TIP BOX */
+  .tip-box {
+    background: #fffbf0;
+    border: 1px solid #e8d48a;
+    border-radius: 4px;
+    padding: 10px 13px;
+    font-size: 13px;
+    line-height: 1.55;
+    margin-top: 12px;
+    display: flex; gap: 8px;
+  }
+  .tip-icon { flex-shrink: 0; font-size: 14px; }
+
+  @media (max-width: 640px) {
+    .hero { padding: 36px 20px 32px; }
+    .container { padding: 0 16px; }
+    .session-pages { display: none; }
+    .legend-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-label">📚 IIBA ECBA Exam Prep · BABOK Guide v3</div>
+    <h1>NotebookLM<br>Study Master Plan</h1>
+    <p class="hero-sub">Пошаговый чеклист с промптами для каждой сессии — от первого открытия книги до экзамена</p>
+    <div class="hero-meta">
+      <div class="meta-item"><span>Всего сессий</span><span class="meta-val">36</span></div>
+      <div class="meta-item"><span>Фаз обучения</span><span class="meta-val">12</span></div>
+      <div class="meta-item"><span>~Недель (5 сес/нед)</span><span class="meta-val">7–8</span></div>
+      <div class="meta-item"><span>Экзамен</span><span class="meta-val">50 вопр</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <span class="progress-label">ПРОГРЕСС</span>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-pct" id="progressPct">0%</span>
+</div>
+
+<!-- FORMAT LEGEND -->
+<div class="legend">
+  <div class="container">
+    <div class="legend-title">Форматы NotebookLM Studio — когда что использовать</div>
+    <div class="legend-grid">
+      <div class="fmt-card">
+        <div class="fmt-icon">🎙️</div>
+        <div>
+          <div class="fmt-name">PODCAST — Long</div>
+          <div class="fmt-desc">Первое знакомство с темой. Customize → вставь промпт. Слушай пока гуляешь.</div>
+        </div>
+      </div>
+      <div class="fmt-card">
+        <div class="fmt-icon">⚡</div>
+        <div>
+          <div class="fmt-name">PODCAST — Short</div>
+          <div class="fmt-desc">Быстрый recap в конце фазы. Customize → вставь промпт. 5–8 минут.</div>
+        </div>
+      </div>
+      <div class="fmt-card">
+        <div class="fmt-icon">📄</div>
+        <div>
+          <div class="fmt-name">BRIEFING DOC</div>
+          <div class="fmt-desc">Читай первым — даёт скелет темы до погружения. Customize → узкий промпт.</div>
+        </div>
+      </div>
+      <div class="fmt-card">
+        <div class="fmt-icon">📋</div>
+        <div>
+          <div class="fmt-name">STUDY GUIDE</div>
+          <div class="fmt-desc">Структурированные заметки после подкаста. Сохраняй как Note в NLM.</div>
+        </div>
+      </div>
+      <div class="fmt-card">
+        <div class="fmt-icon">🃏</div>
+        <div>
+          <div class="fmt-name">FLASHCARDS</div>
+          <div class="fmt-desc">Для терминологически плотных тем (гл. 2, гл. 10). После подкаста.</div>
+        </div>
+      </div>
+      <div class="fmt-card">
+        <div class="fmt-icon">❓</div>
+        <div>
+          <div class="fmt-name">QUIZ</div>
+          <div class="fmt-desc">В конце каждой сессии. Difficulty выбирай в интерфейсе NLM: Medium для подтем, Hard для review.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHASES -->
+<div class="phases">
+  <div class="container">
+
+    <!-- PHASE 0 -->
+    <div class="phase" id="ph0">
+      <div class="phase-header" onclick="togglePhase('ph0')">
+        <div class="phase-num">0</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза нулевая · 1 сессия</div>
+          <div class="phase-name">Ориентация и Setup</div>
+        </div>
+        <span class="phase-badge">Гл. 1</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">Структура BABOK, как устроен экзамен — прежде чем углубляться.</div>
+      <div class="phase-body" id="ph0-body">
+
+        <div class="session" id="s0-1">
+          <div class="session-header" onclick="toggleSession('s0-1')">
+            <div class="session-check" onclick="toggleDone(event,'s0-1')">✓</div>
+            <div class="session-id">0.1</div>
+            <div class="session-title">Структура BABOK + Как устроен ECBA экзамен</div>
+            <div class="session-pages">стр. 1–10</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="section-label">Цели</div>
+            <ul class="goal-list">
+              <li>Понять 6 Knowledge Areas и их вес на экзамене</li>
+              <li>Запомнить структуру каждого таска: Input → Task → Output + Elements + Techniques</li>
+              <li>Понять разницу между KA, Tasks и Techniques</li>
+            </ul>
+            <div class="divider"></div>
+
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus only on Chapter 1 of the BABOK Guide v3, pages 1–10. Cover the structure of the guide, the 6 Knowledge Areas, and how each Task is organized (Inputs, Outputs, Elements, Techniques).<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus ONLY on Chapter 1 of BABOK Guide v3, pages 1–10.
+
+Cover in a friendly, conversational tone:
+1. What is Business Analysis according to IIBA?
+2. The structure of the BABOK Guide — what are the 6 Knowledge Areas and their exam weights?
+3. How each Task is structured: Inputs, Outputs, Elements, Techniques, Guidelines
+4. Why Chapter 2 (Key Concepts) is critical to understand first
+5. End with 3 things to memorize before moving on
+
+Use simple analogies. 10–15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">Draw a simple table showing all 6 BABOK Knowledge Areas with chapter number, number of tasks, and ECBA exam weight percentage. Plain text table format.</div>
+              <div class="chat-q" onclick="chatCopy(this)">What is the difference between a Knowledge Area, a Task, and a Technique in BABOK v3? Explain with one concrete example showing how they relate.</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 1 of BABOK Guide v3, pages 1–10. Cover the structure of the guide, Knowledge Areas, and Task anatomy.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="phase" id="ph1">
+      <div class="phase-header" onclick="togglePhase('ph1')">
+        <div class="phase-num">1</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза первая · 3 сессии</div>
+          <div class="phase-name">Key Concepts — Фундамент<span class="weight-tag">КРИТИЧНО</span></div>
+        </div>
+        <span class="phase-badge">Гл. 2</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">Глава 2 — словарь и операционная система всего BABOK. Без неё остальное не складывается.</div>
+      <div class="phase-body" id="ph1-body">
+
+        <div class="session" id="s1-1">
+          <div class="session-header" onclick="toggleSession('s1-1')">
+            <div class="session-check" onclick="toggleDone(event,'s1-1')">✓</div>
+            <div class="session-id">1.1</div>
+            <div class="session-title">BACCM™ — 6 Core Concepts</div>
+            <div class="session-pages">стр. 12–15</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-flash">🃏 FLASH</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="section-label">Цели</div>
+            <ul class="goal-list">
+              <li>Назвать все 6 Core Concepts BACCM наизусть: Change, Need, Solution, Stakeholder, Value, Context</li>
+              <li>Объяснить связь между ними</li>
+              <li>Понять зачем BACCM существует (единый язык BA)</li>
+            </ul>
+            <div class="divider"></div>
+
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus only on Section 2.1 of BABOK Guide v3 — the Business Analysis Core Concept Model (BACCM™), pages 12–15. Cover all 6 core concepts and how they interrelate.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus ONLY on Section 2.1 of BABOK Guide v3 — the BACCM™, pages 12–15.
+
+Create a deep-dive conversation covering:
+1. What is the BACCM and why does it matter for the ECBA exam?
+2. All 6 core concepts: Change, Need, Solution, Stakeholder, Value, Context — with a real-world example for each
+3. How these 6 concepts interrelate — a practical scenario showing all 6 working together
+4. Common exam misconceptions about BACCM terms
+5. A quick verbal 6-question quiz at the end
+
+Engaging tone, like two colleagues discovering something together. 15–20 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">A retail company wants to improve their online checkout. Walk through this scenario identifying all 6 BACCM concepts as they appear. Be specific about what each concept maps to in this example.</div>
+              <div class="chat-q" onclick="chatCopy(this)">What are the most common ways students confuse the 6 BACCM concepts on the ECBA exam? Give me the top 3 traps with examples of what the wrong thinking looks like vs the correct understanding per BABOK v3.</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🃏 Flashcards</div>
+              <div class="light-prompt">Focus on Section 2.1 of BABOK Guide v3 — BACCM™, pages 12–15. Create flashcards for all 6 core concepts: term on front, definition + one example on back.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Section 2.1 of BABOK Guide v3 — BACCM™, pages 12–15. Test understanding of all 6 core concepts, their definitions, and how they interrelate.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s1-2">
+          <div class="session-header" onclick="toggleSession('s1-2')">
+            <div class="session-check" onclick="toggleDone(event,'s1-2')">✓</div>
+            <div class="session-id">1.2</div>
+            <div class="session-title">Key Terms + Requirements Classification Schema + Stakeholders + Requirements vs Designs</div>
+            <div class="session-pages">стр. 14–21</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-flash">🃏 FLASH</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="section-label">Цели</div>
+            <ul class="goal-list">
+              <li>Знать 4 типа требований: Business, Stakeholder, Solution (Functional + Non-Functional), Transition</li>
+              <li>Различать 9+ типов стейкхолдеров из BABOK</li>
+              <li>Чётко разграничить Requirements vs Designs</li>
+            </ul>
+            <div class="divider"></div>
+
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Sections 2.2, 2.3, 2.4, and 2.5 of BABOK Guide v3 — Key Terms, Requirements Classification Schema, Stakeholders, and Requirements vs Designs. Pages 14–21.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus ONLY on Sections 2.2, 2.3, 2.4, and 2.5 of BABOK Guide v3. Pages 14–21.
+
+Structure the conversation around:
+1. The 4 types of requirements in the Classification Schema — examples for each type
+2. Why does it matter which TYPE of requirement something is?
+3. Main stakeholder roles in BABOK — who are they, how do they differ?
+4. Key distinction: Customer vs End User vs Domain SME vs Sponsor
+5. Requirements vs Designs — what is the crucial difference?
+6. Scenario questions: "In this situation, which stakeholder type is this person?"
+
+Interview prep coaching tone. 15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">Create a comparison table for the 4 requirement types from BABOK v3 Section 2.3. Columns: Type | Who defines it | Example | When it appears in the lifecycle. Plain text table.</div>
+              <div class="chat-q" onclick="chatCopy(this)">List all stakeholder types from BABOK v3 Section 2.4. For each, give their primary concern and one example of a conflict they might have with another stakeholder type on a real project.</div>
+              <div class="chat-q" onclick="chatCopy(this)">Explain the Requirements vs Designs distinction from BABOK v3 Section 2.5. Why does BABOK separate these? Give a concrete example where something that looks like a requirement is actually a design decision.</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🃏 Flashcards</div>
+              <div class="light-prompt">Focus on Sections 2.3 and 2.4 of BABOK Guide v3, pages 16–18. Create flashcards for the 4 requirement types and all stakeholder roles defined in BABOK.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Sections 2.2–2.5 of BABOK Guide v3, pages 14–21. Test the 4 requirement types, stakeholder roles, and Requirements vs Designs distinction.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s1-3">
+          <div class="session-header" onclick="toggleSession('s1-3')">
+            <div class="session-check" onclick="toggleDone(event,'s1-3')">✓</div>
+            <div class="session-id">1.3</div>
+            <div class="session-title">Review — Глава 2 полностью</div>
+            <div class="session-pages">Гл. 2</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">⚡ SHORT</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">⚡ Podcast — Short</div>
+              <div class="prompt-box">Create a SHORT 5–7 minute rapid-fire recap of ALL of Chapter 2 of BABOK Guide v3.
+
+Hit these fast: BACCM 6 concepts (name + 1 word each), 4 requirement types, top 6 stakeholder types, Requirements vs Designs.
+
+Fast pace, memory-drill energy. No deep explanations.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span></div>
+              <div class="light-prompt">Focus on all of Chapter 2 of BABOK Guide v3, pages 12–21. Cover BACCM concepts, requirement types, stakeholder roles, and Requirements vs Designs. Include scenario-based questions.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+              <div class="tip-box" style="margin-top:8px;"><span class="tip-icon">💡</span><span>Выбери Hard в интерфейсе NLM — это review сессия, нужно проверить всю главу глубоко.</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase" id="ph2">
+      <div class="phase-header" onclick="togglePhase('ph2')">
+        <div class="phase-num">2</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза вторая · 3 сессии</div>
+          <div class="phase-name">BA Planning and Monitoring</div>
+        </div>
+        <span class="phase-badge">Гл. 3 · 12%</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">5 тасков: Plan BA Approach, Plan Stakeholder Engagement, Plan Governance, Plan Information Management, Identify Performance Improvements.</div>
+      <div class="phase-body" id="ph2-body">
+
+        <div class="session" id="s2-1">
+          <div class="session-header" onclick="toggleSession('s2-1')">
+            <div class="session-check" onclick="toggleDone(event,'s2-1')">✓</div>
+            <div class="session-id">2.1</div>
+            <div class="session-title">Tasks 3.1 Plan BA Approach + 3.2 Plan Stakeholder Engagement</div>
+            <div class="session-pages">стр. 24–36</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="section-label">Цели</div>
+            <ul class="goal-list">
+              <li>Назвать Inputs и Outputs тасков 3.1 и 3.2</li>
+              <li>Объяснить разницу между predictive и adaptive BA approach</li>
+              <li>Понять как формируется Stakeholder Engagement Approach</li>
+            </ul>
+            <div class="divider"></div>
+
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 3, Tasks 3.1 and 3.2 of BABOK Guide v3 — Plan Business Analysis Approach and Plan Stakeholder Engagement. Pages 24–36.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 3, Tasks 3.1 and 3.2 of BABOK Guide v3. Pages 24–36.
+
+Structure the conversation:
+1. TASK 3.1 — Plan Business Analysis Approach
+   - Inputs, Output, key Elements
+   - Predictive vs adaptive approach — explain with real examples
+   - Which techniques are used and when?
+2. TASK 3.2 — Plan Stakeholder Engagement
+   - Inputs, Output, key Elements
+   - How to analyze and classify stakeholders?
+   - What does a Stakeholder Engagement Approach document contain?
+3. How 3.1 and 3.2 connect to each other
+4. 4 exam-style scenario questions at the end
+
+ECBA exam coaching tone. 15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">Create an Input-Output table for Tasks 3.1 and 3.2 of BABOK v3. Columns: Task Name | Inputs | Output | Key Techniques. Plain text table.</div>
+              <div class="chat-q" onclick="chatCopy(this)">Explain the difference between predictive and adaptive BA approaches from BABOK v3 Section 3.1. Give one real industry example for each, and explain what triggers the choice between them.</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 3, Tasks 3.1 and 3.2 of BABOK Guide v3 — Plan Business Analysis Approach and Plan Stakeholder Engagement. Pages 24–36.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s2-2">
+          <div class="session-header" onclick="toggleSession('s2-2')">
+            <div class="session-check" onclick="toggleDone(event,'s2-2')">✓</div>
+            <div class="session-id">2.2</div>
+            <div class="session-title">Tasks 3.3 Plan Governance + 3.4 Information Management + 3.5 Performance Improvements</div>
+            <div class="session-pages">стр. 37–54</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="section-label">Цели</div>
+            <ul class="goal-list">
+              <li>Понять разницу между Governance (кто решает) и Information Management (как хранить)</li>
+              <li>Знать элементы 3.5 — как BA улучшает свою работу</li>
+            </ul>
+            <div class="divider"></div>
+
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 3, Tasks 3.3, 3.4, and 3.5 of BABOK Guide v3 — Plan BA Governance, Plan BA Information Management, and Identify BA Performance Improvements. Pages 37–54.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 3, Tasks 3.3, 3.4, and 3.5 of BABOK Guide v3. Pages 37–54.
+
+Cover each task:
+TASK 3.3 — Plan Business Analysis Governance
+- What decisions does this govern? Who approves requirements changes?
+- Key elements: decision making, change control, plan approvals, requirements prioritization process
+
+TASK 3.4 — Plan Business Analysis Information Management
+- How are BA work products organized, stored, accessed?
+- Key elements: organization, level of abstraction, traceability, storage/access, requirements attributes
+
+TASK 3.5 — Identify Business Analysis Performance Improvements
+- How does a BA assess their own performance?
+- What outputs come from this task?
+
+End: "If you had to pick the ONE output that matters most in each task for an exam, what would it be and why?"
+
+12–15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">What is the difference between Business Analysis Governance (Task 3.3) and Business Analysis Information Management (Task 3.4) in BABOK v3? Use a concrete project scenario showing when you'd work on each — and why they are separate tasks.</div>
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3 Task 3.5, how does a BA assess and improve their own performance? What triggers this task and what is the output? Is this a one-time task or ongoing?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 3, Tasks 3.3, 3.4, and 3.5 of BABOK Guide v3 — Plan BA Governance, Plan BA Information Management, and Identify BA Performance Improvements. Pages 37–54.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s2-3">
+          <div class="session-header" onclick="toggleSession('s2-3')">
+            <div class="session-check" onclick="toggleDone(event,'s2-3')">✓</div>
+            <div class="session-id">2.3</div>
+            <div class="session-title">Review — Глава 3 полностью</div>
+            <div class="session-pages">Гл. 3</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">⚡ SHORT</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">⚡ Podcast — Short</div>
+              <div class="prompt-box">5-minute rapid-fire recap of ALL 5 tasks in Chapter 3 of BABOK v3 (Business Analysis Planning and Monitoring).
+
+For each task: name, 2 key inputs, 1 main output, 1 key technique. Fast pace, no deep explanations.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span></div>
+              <div class="light-prompt">Focus on all of Chapter 3 of BABOK Guide v3 — Business Analysis Planning and Monitoring, pages 24–54. Cover all 5 tasks with scenario-based questions: "Which task covers this?" and "What is the input/output of task 3.X?"<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase" id="ph3">
+      <div class="phase-header" onclick="togglePhase('ph3')">
+        <div class="phase-num">3</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза третья · 3 сессии</div>
+          <div class="phase-name">Elicitation and Collaboration<span class="weight-tag">20% EXAM</span></div>
+        </div>
+        <span class="phase-badge">Гл. 4 · 20%</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">Самый высокий вес на ECBA. 5 тасков: Prepare, Conduct, Confirm Elicitation + Communicate BA Info + Manage Stakeholder Collaboration.</div>
+      <div class="phase-body" id="ph3-body">
+
+        <div class="session" id="s3-1">
+          <div class="session-header" onclick="toggleSession('s3-1')">
+            <div class="session-check" onclick="toggleDone(event,'s3-1')">✓</div>
+            <div class="session-id">3.1</div>
+            <div class="session-title">Tasks 4.1 Prepare for Elicitation + 4.2 Conduct Elicitation</div>
+            <div class="session-pages">стр. 56–64</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-guide">📋 GUIDE</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="section-label">Цели</div>
+            <ul class="goal-list">
+              <li>Знать разницу между подготовкой к elicitation и самой elicitation</li>
+              <li>Понять 4 типа elicitation: collaborative, research-based, experiments, existing documentation</li>
+              <li>Запомнить outputs: Elicitation Activity Plan → Elicitation Results (Unconfirmed)</li>
+            </ul>
+            <div class="divider"></div>
+
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 4, Tasks 4.1 and 4.2 of BABOK Guide v3 — Prepare for Elicitation and Conduct Elicitation. Pages 56–64.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 4, Tasks 4.1 and 4.2 of BABOK Guide v3. Pages 56–64.
+
+Structure:
+1. TASK 4.1 — Prepare for Elicitation
+   - What planning happens BEFORE elicitation? What is the output?
+   - Elements: understanding scope, stakeholders, logistics, questions to prepare
+2. TASK 4.2 — Conduct Elicitation
+   - 4 types of elicitation activities: collaborative, research, experiments, existing documentation
+   - 2 technique examples for each type
+   - Output: Elicitation Results (Unconfirmed) — what does this mean?
+   - How does the BA adapt when stakeholders are unavailable?
+3. Why do people confuse 4.1 and 4.2? What's the clearest distinction?
+
+Practical, example-heavy. 15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">List all elicitation techniques mentioned in BABOK v3 Chapter 4 and categorize them by the 4 elicitation types: collaborative, research-based, experiments, existing documentation. Plain text table format.</div>
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3 Task 4.1, what specifically does the BA prepare before elicitation begins? What could go wrong on a project if this preparation is skipped? Give a realistic scenario.</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">📋 Study Guide</div>
+              <div class="light-prompt">Focus on Chapter 4, Tasks 4.1 and 4.2 of BABOK Guide v3. Pages 56–64. Generate a study guide covering inputs, outputs, elements, and techniques for both tasks.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 4, Tasks 4.1 and 4.2 of BABOK Guide v3 — Prepare for Elicitation and Conduct Elicitation. Pages 56–64.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s3-2">
+          <div class="session-header" onclick="toggleSession('s3-2')">
+            <div class="session-check" onclick="toggleDone(event,'s3-2')">✓</div>
+            <div class="session-id">3.2</div>
+            <div class="session-title">Tasks 4.3 Confirm Results + 4.4 Communicate BA Info + 4.5 Manage Collaboration</div>
+            <div class="session-pages">стр. 65–76</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="section-label">Цели</div>
+            <ul class="goal-list">
+              <li>Понять flow: Unconfirmed Results → Confirmed Results (4.3)</li>
+              <li>Знать какую информацию BA коммуницирует и как (4.4)</li>
+              <li>Управление конфликтами и сотрудничеством (4.5)</li>
+            </ul>
+            <div class="divider"></div>
+
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 4, Tasks 4.3, 4.4, and 4.5 of BABOK Guide v3. Pages 65–76.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 4, Tasks 4.3, 4.4, and 4.5 of BABOK Guide v3. Pages 65–76.
+
+TASK 4.3 — Confirm Elicitation Results
+- Why confirm? What can go wrong if skipped?
+- Input: Elicitation Results (Unconfirmed) → Output: Elicitation Results (Confirmed)
+
+TASK 4.4 — Communicate Business Analysis Information
+- What types of BA information get communicated? To whom?
+- Communication packages and audience awareness
+
+TASK 4.5 — Manage Stakeholder Collaboration
+- What does "managing" collaboration actually mean for a BA?
+- How to handle resistant or disengaged stakeholders?
+
+Conclude with a connected scenario showing tasks 4.1 → 4.5 in sequence on one project.
+12–15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">Walk me through the complete elicitation lifecycle: what happens in Tasks 4.1 through 4.5 in sequence? For each task state: what triggers it, what is produced, and what happens next.</div>
+              <div class="chat-q" onclick="chatCopy(this)">A stakeholder refuses to attend workshops and misses deadlines for document review. According to BABOK v3 Chapter 4, what should the BA do? Reference specific task elements from 4.4 and 4.5.</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 4, Tasks 4.3, 4.4, and 4.5 of BABOK Guide v3 — Confirm Elicitation Results, Communicate BA Information, and Manage Stakeholder Collaboration. Pages 65–76.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s3-3">
+          <div class="session-header" onclick="toggleSession('s3-3')">
+            <div class="session-check" onclick="toggleDone(event,'s3-3')">✓</div>
+            <div class="session-id">3.3</div>
+            <div class="session-title">Review — Глава 4 полностью (20% веса!)</div>
+            <div class="session-pages">Гл. 4</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">⚡ SHORT</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">⚡ Podcast — Short</div>
+              <div class="prompt-box">5–7 minute rapid recap of ALL 5 tasks in Chapter 4 of BABOK v3 (Elicitation and Collaboration).
+
+For each task: name, key distinction from the others, 1 input, 1 output. Special focus on: Unconfirmed vs Confirmed Results — this is a common exam trap. Fast pace.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span></div>
+              <div class="light-prompt">Focus on all of Chapter 4 of BABOK Guide v3 — Elicitation and Collaboration, pages 56–76. This is 20% of the ECBA exam. Include scenario questions on technique selection, stakeholder collaboration, and the full elicitation lifecycle.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase" id="ph4">
+      <div class="phase-header" onclick="togglePhase('ph4')">
+        <div class="phase-num">4</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза четвёртая · 3 сессии</div>
+          <div class="phase-name">Requirements Life Cycle Management</div>
+        </div>
+        <span class="phase-badge">Гл. 5 · 15%</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">Трассировка, поддержка, приоритизация, оценка изменений, одобрение требований.</div>
+      <div class="phase-body" id="ph4-body">
+
+        <div class="session" id="s4-1">
+          <div class="session-header" onclick="toggleSession('s4-1')">
+            <div class="session-check" onclick="toggleDone(event,'s4-1')">✓</div>
+            <div class="session-id">4.1</div>
+            <div class="session-title">Tasks 5.1 Trace + 5.2 Maintain + 5.3 Prioritize Requirements</div>
+            <div class="session-pages">стр. 79–90</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="section-label">Цели</div>
+            <ul class="goal-list">
+              <li>Объяснить forward vs backward traceability</li>
+              <li>Понять что триггерит Maintain Requirements</li>
+              <li>Знать техники приоритизации: MoSCoW, timeboxing, ranking</li>
+            </ul>
+            <div class="divider"></div>
+
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 5, Tasks 5.1, 5.2, and 5.3 of BABOK Guide v3 — Trace Requirements, Maintain Requirements, and Prioritize Requirements. Pages 79–90.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 5, Tasks 5.1, 5.2, and 5.3 of BABOK Guide v3. Pages 79–90.
+
+TASK 5.1 — Trace Requirements
+- What is traceability and why does it matter?
+- Forward vs backward traceability — explain with a clear example
+- What is a traceability matrix?
+
+TASK 5.2 — Maintain Requirements
+- Why requirements need ongoing maintenance
+- What triggers requirements to be updated?
+
+TASK 5.3 — Prioritize Requirements
+- Factors that drive priority
+- Key techniques: MoSCoW, timeboxing, ranking, business value
+- Who makes prioritization decisions?
+
+Scenario linking all three at the end. 15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">Explain forward traceability vs backward traceability from BABOK v3 Section 5.1. Give a concrete example of each using a software project. What breaks in a project when traceability is missing?</div>
+              <div class="chat-q" onclick="chatCopy(this)">List all prioritization techniques from BABOK v3 Section 5.3. For each: name, brief description, and the situation where it works best. Which technique involves the sponsor most directly?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 5, Tasks 5.1, 5.2, and 5.3 of BABOK Guide v3 — Trace, Maintain, and Prioritize Requirements. Pages 79–90.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s4-2">
+          <div class="session-header" onclick="toggleSession('s4-2')">
+            <div class="session-check" onclick="toggleDone(event,'s4-2')">✓</div>
+            <div class="session-id">4.2</div>
+            <div class="session-title">Tasks 5.4 Assess Requirements Changes + 5.5 Approve Requirements</div>
+            <div class="session-pages">стр. 91–100</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 5, Tasks 5.4 and 5.5 of BABOK Guide v3 — Assess Requirements Changes and Approve Requirements. Pages 91–100.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 5, Tasks 5.4 and 5.5 of BABOK Guide v3. Pages 91–100.
+
+TASK 5.4 — Assess Requirements Changes
+- How does a BA evaluate a proposed change?
+- What is impact analysis and how is it conducted?
+- Who is involved? What is the output?
+
+TASK 5.5 — Approve Requirements
+- What does "approved" mean in BABOK — is it just a signature?
+- Who approves and what authority do they have?
+- What happens if stakeholders disagree during approval?
+
+Exam scenario at the end: "A stakeholder requests a major scope change in week 8 of a 10-week project. Walk through tasks 5.4 and 5.5 step by step."
+
+10–12 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3 Task 5.4, what is the difference between assessing a requirements change and simply implementing it? What are the steps of impact analysis and who is responsible for each step?</div>
+              <div class="chat-q" onclick="chatCopy(this)">What does "Requirements (Approved)" as an output of Task 5.5 actually mean in BABOK v3? Does approval always require a formal signature? What happens if stakeholders cannot reach agreement?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 5, Tasks 5.4 and 5.5 of BABOK Guide v3 — Assess Requirements Changes and Approve Requirements. Pages 91–100.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s4-3">
+          <div class="session-header" onclick="toggleSession('s4-3')">
+            <div class="session-check" onclick="toggleDone(event,'s4-3')">✓</div>
+            <div class="session-id">4.3</div>
+            <div class="session-title">Review — Глава 5 полностью</div>
+            <div class="session-pages">Гл. 5</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">⚡ SHORT</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">⚡ Podcast — Short</div>
+              <div class="prompt-box">5-minute rapid recap of ALL 5 tasks in Chapter 5 of BABOK v3 (Requirements Life Cycle Management). For each task: name, what triggers it, key output. Focus especially on the difference between Trace (5.1) and Maintain (5.2).<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span></div>
+              <div class="light-prompt">Focus on all of Chapter 5 of BABOK Guide v3 — Requirements Life Cycle Management, pages 79–100. Include scenario questions on traceability, change assessment, prioritization techniques, and who has authority to approve requirements.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="phase" id="ph5">
+      <div class="phase-header" onclick="togglePhase('ph5')">
+        <div class="phase-num">5</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза пятая · 3 сессии</div>
+          <div class="phase-name">Strategy Analysis</div>
+        </div>
+        <span class="phase-badge">Гл. 6 · 15%</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">Current State → Future State → Risks → Change Strategy. Аналитика и стратегические инструменты.</div>
+      <div class="phase-body" id="ph5-body">
+
+        <div class="session" id="s5-1">
+          <div class="session-header" onclick="toggleSession('s5-1')">
+            <div class="session-check" onclick="toggleDone(event,'s5-1')">✓</div>
+            <div class="session-id">5.1</div>
+            <div class="session-title">Tasks 6.1 Analyze Current State + 6.2 Define Future State</div>
+            <div class="session-pages">стр. 103–119</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 6, Tasks 6.1 and 6.2 of BABOK Guide v3 — Analyze Current State and Define Future State. Pages 103–119.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 6, Tasks 6.1 and 6.2 of BABOK Guide v3. Pages 103–119.
+
+TASK 6.1 — Analyze Current State
+- What does "current state" include? (capabilities, people, technology, structure, policies — not just processes)
+- Key elements: business needs, organizational structure, capabilities, external influencers
+- Tools: SWOT, PESTLE, root cause analysis
+- Output: Current State Description
+
+TASK 6.2 — Define Future State
+- What does the BA define here? What is in scope of change?
+- Elements: future capabilities, business objectives, scope, constraints, assumptions
+- SMART objectives, business capability analysis
+- How 6.1 and 6.2 enable 6.3 and 6.4
+
+Real example: a company moves from manual reporting to automated dashboards. Walk 6.1 and 6.2. 15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">List all elements of Current State Description from BABOK v3 Task 6.1. For each element, explain what a BA actually examines and documents. Which elements are most commonly overlooked?</div>
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3 Task 6.2, what makes a "Future State" definition complete? What is the difference between a Business Objective and a Business Capability in this context? Give examples of each.</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 6, Tasks 6.1 and 6.2 of BABOK Guide v3 — Analyze Current State and Define Future State. Pages 103–119.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s5-2">
+          <div class="session-header" onclick="toggleSession('s5-2')">
+            <div class="session-check" onclick="toggleDone(event,'s5-2')">✓</div>
+            <div class="session-id">5.2</div>
+            <div class="session-title">Tasks 6.3 Assess Risks + 6.4 Define Change Strategy</div>
+            <div class="session-pages">стр. 120–133</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 6, Tasks 6.3 and 6.4 of BABOK Guide v3 — Assess Risks and Define Change Strategy. Pages 120–133.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 6, Tasks 6.3 and 6.4 of BABOK Guide v3. Pages 120–133.
+
+TASK 6.3 — Assess Risks
+- Types of risks the BA assesses — beyond just project risks
+- Risk tolerance, uncertainty avoidance
+- Output: Risk Analysis Results
+- How does BA risk assessment differ from PM risk management?
+
+TASK 6.4 — Define Change Strategy
+- What is a Change Strategy and what does it contain?
+- Gap analysis, enterprise readiness, solution scope
+- Output: Change Strategy + Solution Scope
+
+Scenario: "The future state requires a new CRM system. Some staff resist technology changes. How would a BA use 6.3 and 6.4?" 12 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3, what is the difference between a Risk (Task 6.3) and a Constraint (Task 6.2)? Give 3 examples showing the distinction clearly. Why does BABOK treat these in different tasks?</div>
+              <div class="chat-q" onclick="chatCopy(this)">What is included in a Change Strategy output from BABOK v3 Task 6.4? How does it differ from a Project Plan? What role does the BA play vs the Project Manager in defining it?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 6, Tasks 6.3 and 6.4 of BABOK Guide v3 — Assess Risks and Define Change Strategy. Pages 120–133.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s5-3">
+          <div class="session-header" onclick="toggleSession('s5-3')">
+            <div class="session-check" onclick="toggleDone(event,'s5-3')">✓</div>
+            <div class="session-id">5.3</div>
+            <div class="session-title">Review — Глава 6 полностью</div>
+            <div class="session-pages">Гл. 6</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">⚡ SHORT</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">⚡ Podcast — Short</div>
+              <div class="prompt-box">5-minute rapid recap of ALL 4 tasks in Chapter 6 of BABOK v3 (Strategy Analysis). For each task: name, key output, most important element. Emphasize: Risk vs Constraint distinction and how all 4 tasks flow together.<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span></div>
+              <div class="light-prompt">Focus on all of Chapter 6 of BABOK Guide v3 — Strategy Analysis, pages 103–133. Include scenario questions on current vs future state, gap analysis, risk assessment, and change strategy. Include questions on risk vs constraint vs assumption distinctions.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="phase" id="ph6">
+      <div class="phase-header" onclick="togglePhase('ph6')">
+        <div class="phase-num">6</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза шестая · 4 сессии</div>
+          <div class="phase-name">Requirements Analysis and Design Definition<span class="weight-tag">23% EXAM</span></div>
+        </div>
+        <span class="phase-badge">Гл. 7 · 23%</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">Самый тяжёлый вес на экзамене. 6 тасков. Максимум внимания и повторений.</div>
+      <div class="phase-body" id="ph6-body">
+
+        <div class="session" id="s6-1">
+          <div class="session-header" onclick="toggleSession('s6-1')">
+            <div class="session-check" onclick="toggleDone(event,'s6-1')">✓</div>
+            <div class="session-id">6.1</div>
+            <div class="session-title">Tasks 7.1 Specify & Model Requirements + 7.2 Verify Requirements</div>
+            <div class="session-pages">стр. 136–143</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-flash">🃏 FLASH</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="section-label">Цели</div>
+            <ul class="goal-list">
+              <li>Знать 9 характеристик качества требований наизусть</li>
+              <li>Чётко понять: Verify = well-formed, НЕ "соответствует бизнесу"</li>
+              <li>Понять разницу Verify (7.2) vs Validate (7.3) — главная ловушка гл. 7</li>
+            </ul>
+            <div class="divider"></div>
+
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 7, Tasks 7.1 and 7.2 of BABOK Guide v3 — Specify and Model Requirements and Verify Requirements. Pages 136–143.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 7, Tasks 7.1 and 7.2 of BABOK Guide v3. Pages 136–143.
+
+TASK 7.1 — Specify and Model Requirements
+- What does "specify" mean vs "model" requirements?
+- Types of models: matrices, diagrams, text, prototypes — when to use which?
+- Output: Requirements (Specified and Modeled)
+
+TASK 7.2 — Verify Requirements
+- What does verification mean? (Correct form — NOT correct for the business)
+- The 9 quality characteristics of requirements: atomic, complete, consistent, concise, feasible, unambiguous, testable, prioritized, understandable
+- Output: Requirements (Verified)
+
+CRITICAL exam trap: Verify ≠ Validate. Explain the difference clearly with examples from both IT and non-IT domains.
+
+15–20 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">List all 9 quality characteristics of requirements from BABOK v3 Section 7.2. For each: name, definition (1 sentence), and a concrete BAD requirement example that violates it.</div>
+              <div class="chat-q" onclick="chatCopy(this)">What is the BABOK v3 distinction between Verify Requirements (7.2) and Validate Requirements (7.3)? Give one concrete example where a requirement passes verification but fails validation — and one where it fails verification.</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🃏 Flashcards</div>
+              <div class="light-prompt">Focus on Chapter 7, Task 7.2 of BABOK Guide v3, pages 141–143. Create flashcards for all 9 requirements quality characteristics: term on front, definition + bad example on back.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 7, Tasks 7.1 and 7.2 of BABOK Guide v3 — Specify and Model Requirements and Verify Requirements. Pages 136–143. Include questions on the 9 quality characteristics and the Verify vs Validate distinction.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s6-2">
+          <div class="session-header" onclick="toggleSession('s6-2')">
+            <div class="session-check" onclick="toggleDone(event,'s6-2')">✓</div>
+            <div class="session-id">6.2</div>
+            <div class="session-title">Tasks 7.3 Validate Requirements + 7.4 Define Requirements Architecture</div>
+            <div class="session-pages">стр. 144–151</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 7, Tasks 7.3 and 7.4 of BABOK Guide v3 — Validate Requirements and Define Requirements Architecture. Pages 144–151.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 7, Tasks 7.3 and 7.4 of BABOK Guide v3. Pages 144–151.
+
+TASK 7.3 — Validate Requirements
+- Validation = do requirements define a solution that delivers VALUE to the business?
+- How is this different from verification? (Verify = well-formed; Validate = delivers business value)
+- Assumptions and constraints checked during validation
+- Output: Requirements (Validated)
+
+TASK 7.4 — Define Requirements Architecture
+- What is requirements architecture and why does it matter?
+- Key elements: viewpoints, templates, relationships between requirements
+- Output: Requirements Architecture
+
+Scenario: "A BA has 150 verified requirements for a new HR system. Now what?" — walk through 7.3 and 7.4.
+
+12–15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3, a requirement states: "The system shall process transactions in under 2 seconds." Does this pass Verification (7.2)? Does it pass Validation (7.3)? Walk through both checks step by step.</div>
+              <div class="chat-q" onclick="chatCopy(this)">What is Requirements Architecture from BABOK v3 Task 7.4? How is it different from Solution Architecture? What breaks in a project if requirements architecture is skipped?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 7, Tasks 7.3 and 7.4 of BABOK Guide v3 — Validate Requirements and Define Requirements Architecture. Pages 144–151.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s6-3">
+          <div class="session-header" onclick="toggleSession('s6-3')">
+            <div class="session-check" onclick="toggleDone(event,'s6-3')">✓</div>
+            <div class="session-id">6.3</div>
+            <div class="session-title">Tasks 7.5 Define Design Options + 7.6 Analyze Value and Recommend Solution</div>
+            <div class="session-pages">стр. 152–163</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 7, Tasks 7.5 and 7.6 of BABOK Guide v3 — Define Design Options and Analyze Potential Value and Recommend Solution. Pages 152–163.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 7, Tasks 7.5 and 7.6 of BABOK Guide v3. Pages 152–163.
+
+TASK 7.5 — Define Design Options
+- What are design options? (not just IT systems — processes, policies, organizational changes too)
+- How does a BA generate and assess design options?
+- Elements: solution options, benchmarking, organizational change, technical constraints
+- Output: Design Options
+
+TASK 7.6 — Analyze Potential Value and Recommend Solution
+- How does the BA calculate or estimate value of a solution?
+- Expected value and risk-adjusted value
+- How does BA formulate a recommendation?
+- Output: Solution Recommendation
+
+Close with: walk ALL 6 tasks of Chapter 7 in one flowing scenario from raw requirements to solution recommendation.
+
+15–20 minutes. This is the heaviest exam chapter.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3 Task 7.5, design options are not just IT solutions. Give 3 examples of non-IT design options a BA might define — one involving a process change, one an organizational change, one a policy change.</div>
+              <div class="chat-q" onclick="chatCopy(this)">How does a BA formulate a Solution Recommendation per BABOK v3 Task 7.6? What factors go into the recommendation? Is the BA making the final decision or advising stakeholders who decide?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 7, Tasks 7.5 and 7.6 of BABOK Guide v3 — Define Design Options and Analyze Potential Value and Recommend Solution. Pages 152–163.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s6-4">
+          <div class="session-header" onclick="toggleSession('s6-4')">
+            <div class="session-check" onclick="toggleDone(event,'s6-4')">✓</div>
+            <div class="session-id">6.4</div>
+            <div class="session-title">Review — Глава 7 полностью (23% веса!)</div>
+            <div class="session-pages">Гл. 7</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">⚡ SHORT</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">⚡ Podcast — Short</div>
+              <div class="prompt-box">7-minute rapid recap of ALL 6 tasks in Chapter 7 of BABOK v3. For each: name + the ONE thing that distinguishes it. Special focus: Verify vs Validate — this is the #1 exam trap in Chapter 7. Fast and punchy.<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span></div>
+              <div class="light-prompt">Focus on all of Chapter 7 of BABOK Guide v3 — Requirements Analysis and Design Definition, pages 136–163. This is 23% of the ECBA exam. Cover all 6 tasks with heavy emphasis on Verify vs Validate, requirements quality characteristics, architecture, and value analysis.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 7 -->
+    <div class="phase" id="ph7">
+      <div class="phase-header" onclick="togglePhase('ph7')">
+        <div class="phase-num">7</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза седьмая · 3 сессии</div>
+          <div class="phase-name">Solution Evaluation</div>
+        </div>
+        <span class="phase-badge">Гл. 8 · 15%</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">Как BA оценивает уже реализованное решение. Measure → Analyze → Assess Limitations → Recommend.</div>
+      <div class="phase-body" id="ph7-body">
+
+        <div class="session" id="s7-1">
+          <div class="session-header" onclick="toggleSession('s7-1')">
+            <div class="session-check" onclick="toggleDone(event,'s7-1')">✓</div>
+            <div class="session-id">7.1</div>
+            <div class="session-title">Tasks 8.1 Measure Performance + 8.2 Analyze Measures + 8.3 Assess Solution Limitations</div>
+            <div class="session-pages">стр. 166–176</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 8, Tasks 8.1, 8.2, and 8.3 of BABOK Guide v3 — Measure Solution Performance, Analyze Performance Measures, and Assess Solution Limitations. Pages 166–176.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 8, Tasks 8.1, 8.2, and 8.3 of BABOK Guide v3. Pages 166–176.
+
+TASK 8.1 — Measure Solution Performance
+- Types of measures: qualitative vs quantitative
+- What metrics and KPIs does the BA define and track?
+- Output: Solution Performance Measures
+
+TASK 8.2 — Analyze Performance Measures
+- How does the BA interpret performance data?
+- What does it mean when metrics fall short of targets?
+
+TASK 8.3 — Assess Solution Limitations
+- Why might a solution underperform even if correctly implemented?
+- Categories of limitations: technical, usability, process gaps, organizational constraints
+
+Scenario: An e-commerce platform launched new checkout. Sales are UP but cart abandonment is also UP. How does the BA use 8.1–8.3? 12 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3 Task 8.1, what is the difference between a metric and a KPI in the context of solution performance measurement? Give 3 examples of each from a real business scenario.</div>
+              <div class="chat-q" onclick="chatCopy(this)">From BABOK v3 Task 8.3, what are the categories of Solution Limitations? Give a concrete example of each category from a real implementation scenario. What does the BA do once limitations are identified?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 8, Tasks 8.1, 8.2, and 8.3 of BABOK Guide v3 — Measure Solution Performance, Analyze Performance Measures, and Assess Solution Limitations. Pages 166–176.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s7-2">
+          <div class="session-header" onclick="toggleSession('s7-2')">
+            <div class="session-check" onclick="toggleDone(event,'s7-2')">✓</div>
+            <div class="session-id">7.2</div>
+            <div class="session-title">Tasks 8.4 Assess Enterprise Limitations + 8.5 Recommend Actions</div>
+            <div class="session-pages">стр. 177–186</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 8, Tasks 8.4 and 8.5 of BABOK Guide v3 — Assess Enterprise Limitations and Recommend Actions to Increase Solution Value. Pages 177–186.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 8, Tasks 8.4 and 8.5 of BABOK Guide v3. Pages 177–186.
+
+TASK 8.4 — Assess Enterprise Limitations
+- The key distinction: Solution Limitations (8.3) vs Enterprise Limitations (8.4)
+- Enterprise limitations: organizational capacity, culture, policies, governance — outside the solution
+- How does the BA identify and document these?
+
+TASK 8.5 — Recommend Actions to Increase Solution Value
+- Types of actions: improve solution, retire it, replace it, do nothing
+- How does this close the feedback loop from Chapter 6 (Strategy Analysis)?
+- Output: Recommended Actions
+
+End with: summary of the FULL BA lifecycle across ALL 6 KAs in one cohesive story.
+
+12–15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">Explain the difference between Solution Limitations (Task 8.3) and Enterprise Limitations (Task 8.4) in BABOK v3. Give one scenario where the same problem could be either — and explain how the BA determines which it is.</div>
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3 Task 8.5, the BA can recommend to "do nothing" about an underperforming solution. When would this be the right recommendation? What conditions would make this appropriate? Based strictly on BABOK v3.</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 8, Tasks 8.4 and 8.5 of BABOK Guide v3 — Assess Enterprise Limitations and Recommend Actions. Pages 177–186.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s7-3">
+          <div class="session-header" onclick="toggleSession('s7-3')">
+            <div class="session-check" onclick="toggleDone(event,'s7-3')">✓</div>
+            <div class="session-id">7.3</div>
+            <div class="session-title">Review — Глава 8 полностью</div>
+            <div class="session-pages">Гл. 8</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">⚡ SHORT</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">⚡ Podcast — Short</div>
+              <div class="prompt-box">5-minute rapid recap of ALL 5 tasks in Chapter 8 of BABOK v3 (Solution Evaluation). For each: name, key output. Special focus: Solution Limitations (8.3) vs Enterprise Limitations (8.4) — the main exam distinction in this chapter.<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span></div>
+              <div class="light-prompt">Focus on all of Chapter 8 of BABOK Guide v3 — Solution Evaluation, pages 166–186. Include scenario questions distinguishing Solution vs Enterprise Limitations, performance measurement, and the types of recommended actions available to the BA.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 8 -->
+    <div class="phase" id="ph8">
+      <div class="phase-header" onclick="togglePhase('ph8')">
+        <div class="phase-num">8</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза восьмая · 4 сессии</div>
+          <div class="phase-name">Techniques — Elicitation & Analysis группы</div>
+        </div>
+        <span class="phase-badge">Гл. 10</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">ECBA тестирует ВЫБОР техники для ситуации — не детали каждой техники. Учим группами по назначению.</div>
+      <div class="phase-body" id="ph8-body">
+
+        <div class="session" id="s8-1">
+          <div class="session-header" onclick="toggleSession('s8-1')">
+            <div class="session-check" onclick="toggleDone(event,'s8-1')">✓</div>
+            <div class="session-id">8.1</div>
+            <div class="session-title">Elicitation Techniques: Interviews, Workshops, Observation, Survey, Focus Groups, Brainstorming, Document Analysis</div>
+            <div class="session-pages">Гл. 10 — выборочно</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on these techniques from Chapter 10 of BABOK Guide v3: Interviews (10.25), Workshops (10.50), Observation (10.31), Survey or Questionnaire (10.45), Focus Groups (10.21), Brainstorming (10.5), Document Analysis (10.18).<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on these elicitation techniques from Chapter 10 of BABOK v3: Interviews (10.25), Workshops (10.50), Observation (10.31), Survey or Questionnaire (10.45), Focus Groups (10.21), Brainstorming (10.5), Document Analysis (10.18).
+
+For EACH technique:
+1. What type of elicitation is it? (collaborative / research / experiment / existing docs)
+2. When is it MOST useful?
+3. When NOT to use it?
+4. Key advantage and key limitation
+
+End scenarios: "You need to elicit requirements from 200 geographically distributed users. Which technique(s) and why?" Then: "You have 5 SMEs in one room and 2 hours — which technique?"
+
+15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">Create a comparison table for these 7 elicitation techniques: Interviews, Workshops, Observation, Survey, Focus Groups, Brainstorming, Document Analysis. Columns: Technique | Elicitation Type | Best situation | Key limitation. Plain text table.</div>
+              <div class="chat-q" onclick="chatCopy(this)">A BA needs to understand how a claims adjuster actually processes a claim — not how the procedure manual says they should. Which elicitation technique from BABOK v3 is best and why? What are the risks of this technique?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on these elicitation techniques from Chapter 10 of BABOK v3: Interviews (10.25), Workshops (10.50), Observation (10.31), Survey (10.45), Focus Groups (10.21), Brainstorming (10.5), Document Analysis (10.18). All questions should be scenario-based technique selection.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s8-2">
+          <div class="session-header" onclick="toggleSession('s8-2')">
+            <div class="session-check" onclick="toggleDone(event,'s8-2')">✓</div>
+            <div class="session-id">8.2</div>
+            <div class="session-title">Requirements Analysis Techniques: User Stories, Use Cases, Process Modelling, Data Modelling, Prototyping, Business Rules Analysis</div>
+            <div class="session-pages">Гл. 10 — выборочно</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on these techniques from Chapter 10 of BABOK v3: User Stories (10.47), Use Cases and Scenarios (10.46), Process Modelling (10.35), Data Modelling (10.15), Prototyping (10.36), Business Rules Analysis (10.9).<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on these techniques from Chapter 10 of BABOK v3: User Stories (10.47), Use Cases and Scenarios (10.46), Process Modelling (10.35), Data Modelling (10.15), Prototyping (10.36), Business Rules Analysis (10.9).
+
+For each technique:
+1. What type of requirement does it best capture?
+2. In which BABOK Knowledge Area is it primarily used?
+3. Agile vs predictive — where does each fit?
+4. What artifact does it produce?
+
+Exam scenarios: "The BA needs to show stakeholders what the new portal will look like before development." And: "The BA needs to define rules about who can approve a purchase order." Which technique for each and why?
+
+12–15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">What is the difference between User Stories (10.47) and Use Cases and Scenarios (10.46) in BABOK v3? Give a scenario where you would choose one over the other. Which is more common in Agile vs predictive projects?</div>
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3, Business Rules Analysis (10.9) is a specific technique. What kinds of requirements does it capture? Give 3 examples of business rules from a banking or insurance context. What artifact does it produce?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on these techniques from Chapter 10 of BABOK v3: User Stories (10.47), Use Cases (10.46), Process Modelling (10.35), Data Modelling (10.15), Prototyping (10.36), Business Rules Analysis (10.9). Scenario-based technique selection questions.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s8-3">
+          <div class="session-header" onclick="toggleSession('s8-3')">
+            <div class="session-check" onclick="toggleDone(event,'s8-3')">✓</div>
+            <div class="session-id">8.3</div>
+            <div class="session-title">Strategy & Planning Techniques: SWOT, Risk Analysis, Benchmarking, Business Model Canvas, Financial Analysis, Root Cause Analysis, Estimation</div>
+            <div class="session-pages">Гл. 10 — выборочно</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on these techniques from Chapter 10 of BABOK v3: SWOT Analysis (10.46), Risk Analysis and Management (10.37), Benchmarking and Market Analysis (10.4), Business Model Canvas (10.8), Financial Analysis (10.20), Root Cause Analysis (10.38), Estimation (10.19).<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on these techniques from Chapter 10 of BABOK v3: SWOT Analysis (10.46), Risk Analysis and Management (10.37), Benchmarking and Market Analysis (10.4), Business Model Canvas (10.8), Financial Analysis (10.20), Root Cause Analysis (10.38), Estimation (10.19).
+
+For each: what problem does it solve, when in the BA process is it used, key output.
+
+Scenario at end: "A company wants to know if they should build vs buy a new system. Which 3 techniques from this list would you recommend and in what order?" 12 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">How does Root Cause Analysis (10.38) from BABOK v3 differ from Risk Analysis (10.37)? When would a BA use each one? Give a concrete project scenario showing both in use on the same initiative.</div>
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3, Financial Analysis (10.20) is used by the BA. What does it involve? What is the BA's role vs the Finance team's role? Which BABOK Knowledge Area primarily uses this technique?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on these techniques from Chapter 10 of BABOK v3: SWOT Analysis, Risk Analysis and Management, Benchmarking, Business Model Canvas, Financial Analysis, Root Cause Analysis, Estimation. Scenario-based: which technique to use and when.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s8-4">
+          <div class="session-header" onclick="toggleSession('s8-4')">
+            <div class="session-check" onclick="toggleDone(event,'s8-4')">✓</div>
+            <div class="session-id">8.4</div>
+            <div class="session-title">Techniques Master Quiz — выбор техники для любой ситуации</div>
+            <div class="session-pages">Гл. 10 + Appendix B</div>
+            <div class="session-formats">
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span></div>
+              <div class="light-prompt">Focus on all techniques covered in Chapter 10 of BABOK v3, sessions 8.1–8.3. All questions are scenario-based technique selection: given a situation, which technique is most appropriate? Cover different stakeholder situations, project types (Agile vs predictive), and requirement types.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 8b -->
+    <div class="phase" id="ph8b">
+      <div class="phase-header" onclick="togglePhase('ph8b')">
+        <div class="phase-num">8b</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза 8b · 2 сессии</div>
+          <div class="phase-name">Techniques — Modelling & Planning + Appendix B<span class="new-tag">ДОБАВЛЕНО</span></div>
+        </div>
+        <span class="phase-badge">Гл. 10 + App B</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">Оставшиеся техники: Acceptance Criteria, Functional Decomposition, NFR Analysis, Stakeholder Map, State Modelling и др. + Appendix B как drill по "техника → таск".</div>
+      <div class="phase-body" id="ph8b-body">
+
+        <div class="session" id="s8b-1">
+          <div class="session-header" onclick="toggleSession('s8b-1')">
+            <div class="session-check" onclick="toggleDone(event,'s8b-1')">✓</div>
+            <div class="session-id">8b.1</div>
+            <div class="session-title">Modelling Techniques: Acceptance Criteria, Functional Decomposition, NFR Analysis, Interface Analysis, Scope Modelling, Decision Modelling, State Modelling, Sequence Diagrams</div>
+            <div class="session-pages">Гл. 10 — выборочно</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="section-label">Цели</div>
+            <ul class="goal-list">
+              <li>Понять когда использовать модели (state, sequence, decomposition) vs текстовые техники</li>
+              <li>Знать разницу Acceptance Criteria (10.1) vs Validate Requirements (7.3)</li>
+              <li>Понять NFR Analysis и почему non-functional требования важны</li>
+            </ul>
+            <div class="divider"></div>
+
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on these techniques from Chapter 10 of BABOK v3: Acceptance and Evaluation Criteria (10.1), Functional Decomposition (10.22), Non-Functional Requirements Analysis (10.30), Interface Analysis (10.24), Scope Modelling (10.39), Decision Modelling (10.16), State Modelling (10.43), Sequence Diagrams (10.40).<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on these techniques from Chapter 10 of BABOK v3: Acceptance and Evaluation Criteria (10.1), Functional Decomposition (10.22), Non-Functional Requirements Analysis (10.30), Interface Analysis (10.24), Scope Modelling (10.39), Decision Modelling (10.16), State Modelling (10.43), Sequence Diagrams (10.40).
+
+For EACH technique:
+1. What type of requirement or problem does it address?
+2. Which BABOK Knowledge Area uses it most?
+3. What does the output/artifact look like?
+
+Key distinctions to clarify:
+- Acceptance Criteria (10.1) vs Validate Requirements (7.3) — what's the difference?
+- Functional Decomposition vs Process Modelling — when each?
+- State Modelling vs Sequence Diagrams — what's the difference?
+
+3 scenario questions at the end. 15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">What is the difference between Acceptance and Evaluation Criteria (10.1) and Validate Requirements (Task 7.3) in BABOK v3? Why do they exist as separate concepts — one is a technique and one is a task?</div>
+              <div class="chat-q" onclick="chatCopy(this)">When would a BA use State Modelling (10.43) vs Sequence Diagrams (10.40) vs Process Modelling (10.35)? Give a different business scenario for each to illustrate the choice.</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on these techniques from Chapter 10 of BABOK v3: Acceptance Criteria (10.1), Functional Decomposition (10.22), NFR Analysis (10.30), Interface Analysis (10.24), Scope Modelling (10.39), Decision Modelling (10.16), State Modelling (10.43), Sequence Diagrams (10.40). Scenario-based selection questions.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s8b-2">
+          <div class="session-header" onclick="toggleSession('s8b-2')">
+            <div class="session-check" onclick="toggleDone(event,'s8b-2')">✓</div>
+            <div class="session-id">8b.2</div>
+            <div class="session-title">Planning & Stakeholder Techniques + Appendix B Drill</div>
+            <div class="session-pages">Гл. 10 + App B стр. 457</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on these techniques from Chapter 10 of BABOK v3: Backlog Management (10.2), Stakeholder List Map or Personas (10.41), Roles and Permissions Matrix (10.37), Item Tracking (10.26), Lessons Learned (10.27), Reviews (10.36), Vendor Assessment (10.48), Collaborative Games (10.10), Organizational Modelling (10.32), Mind Mapping (10.29), Glossary (10.23).
+
+For each: purpose, when used, which KA, key output.
+
+Special focus:
+- Backlog Management — how does it relate to Agile and Task 3.1?
+- Reviews — what are the 3 types and when is each appropriate?
+
+12 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3, what are the 3 types of Reviews (10.36)? For each type: name, how it works, and when in a project it is most appropriate. Which type involves the most formal process?</div>
+              <div class="chat-q" onclick="chatCopy(this)">How does Backlog Management (10.2) from BABOK v3 relate to the Agile Perspective (Chapter 11.1)? Which BABOK tasks use it most? What makes it different from simple prioritization?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span> — Appendix B Drill</div>
+              <div class="light-prompt">Using Appendix B (Techniques to Task Mapping) from BABOK v3, pages 457–472: generate questions in both directions — "Which task(s) use this technique?" and "Name 3 techniques used in this task." Cover all 6 Knowledge Areas. Fast drill format.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+              <div class="tip-box" style="margin-top:8px;"><span class="tip-icon">💡</span><span>Appendix B — самый недооценённый инструмент для ECBA. Экзамен часто спрашивает "какие техники применимы к таску X" — и это именно та таблица.</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 9 -->
+    <div class="phase" id="ph9">
+      <div class="phase-header" onclick="togglePhase('ph9')">
+        <div class="phase-num">9</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза девятая · 2 сессии</div>
+          <div class="phase-name">Underlying Competencies</div>
+        </div>
+        <span class="phase-badge">Гл. 9</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">Мягкие навыки и инструменты BA. На ECBA тестируется меньше чем KA — нужно знать базово.</div>
+      <div class="phase-body" id="ph9-body">
+
+        <div class="session" id="s9-1">
+          <div class="session-header" onclick="toggleSession('s9-1')">
+            <div class="session-check" onclick="toggleDone(event,'s9-1')">✓</div>
+            <div class="session-id">9.1</div>
+            <div class="session-title">9.1 Analytical Thinking + 9.2 Behavioural + 9.3 Business Knowledge</div>
+            <div class="session-pages">стр. 188–202</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 9, Sections 9.1, 9.2, and 9.3 of BABOK v3. Pages 188–202.
+
+9.1 — Analytical Thinking and Problem Solving
+- creative thinking, decision making, learning, problem solving, systems thinking, conceptual thinking
+- How are these applied in BA work?
+
+9.2 — Behavioural Characteristics
+- ethics, personal organization, adaptability, self-awareness
+
+9.3 — Business Knowledge
+- business acumen, industry knowledge, methodology knowledge, solution knowledge
+
+Keep practical and light. 10–12 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 9, Sections 9.1, 9.2, and 9.3 of BABOK v3 — Analytical Thinking, Behavioural Characteristics, and Business Knowledge. Pages 188–202.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s9-2">
+          <div class="session-header" onclick="toggleSession('s9-2')">
+            <div class="session-check" onclick="toggleDone(event,'s9-2')">✓</div>
+            <div class="session-id">9.2</div>
+            <div class="session-title">9.4 Communication + 9.5 Interaction Skills + 9.6 Tools & Technology</div>
+            <div class="session-pages">стр. 203–214</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">⚡ SHORT</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">⚡ Podcast — Short</div>
+              <div class="prompt-box">8-minute overview of Chapter 9, Sections 9.4, 9.5, 9.6 of BABOK v3.
+- 9.4 Communication Skills: oral, written, non-verbal, listening
+- 9.5 Interaction Skills: facilitation, leadership, negotiation, networking
+- 9.6 Tools and Technology: office tools, communication tools, modelling tools
+
+For each section: 3 key points only. Quick and punchy.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 9, Sections 9.4, 9.5, and 9.6 of BABOK v3 — Communication Skills, Interaction Skills, and Tools and Technology. Pages 203–214.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 9b -->
+    <div class="phase" id="ph9b">
+      <div class="phase-header" onclick="togglePhase('ph9b')">
+        <div class="phase-num">9b</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза 9b · 2 сессии</div>
+          <div class="phase-name">Perspectives — Глава 11<span class="new-tag">ДОБАВЛЕНО</span></div>
+        </div>
+        <span class="phase-badge">Гл. 11</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">5 перспектив: Agile, BI, IT, Business Architecture, BPM. На ECBA встречаются в ситуационных вопросах — "BA работает в Agile-проекте, что меняется?"</div>
+      <div class="phase-body" id="ph9b-body">
+
+        <div class="session" id="s9b-1">
+          <div class="session-header" onclick="toggleSession('s9b-1')">
+            <div class="session-check" onclick="toggleDone(event,'s9b-1')">✓</div>
+            <div class="session-id">9b.1</div>
+            <div class="session-title">Perspectives 11.1 Agile + 11.2 Business Intelligence</div>
+            <div class="session-pages">стр. 368–393</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 11, Sections 11.1 and 11.2 of BABOK Guide v3 — The Agile Perspective and The Business Intelligence Perspective. Pages 368–393.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 11, Sections 11.1 and 11.2 of BABOK v3. Pages 368–393.
+
+SECTION 11.1 — The Agile Perspective
+- How does working in Agile change what a BA does in each KA?
+- How does elicitation (Ch4) work differently in Agile? How does requirements lifecycle (Ch5) adapt?
+- Key Agile concepts: backlog management, user stories, definition of done, sprint planning
+- Key techniques used in Agile BA context
+
+SECTION 11.2 — The Business Intelligence Perspective
+- What is the BA's role in a BI/data analytics context?
+- How are requirements different when the solution is a dashboard or report?
+- Key concepts: data quality, data lineage, analytical vs operational requirements
+
+End: 3 scenario questions — "In an Agile project... what does the BA do?" and "In a BI initiative... which approach?"
+
+15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">According to BABOK v3 Section 11.1, how does the Agile Perspective impact each of the 6 Knowledge Areas? Create a table: KA | How Agile changes it | Key Agile technique used. Plain text format.</div>
+              <div class="chat-q" onclick="chatCopy(this)">In a Business Intelligence project (BABOK v3 Section 11.2), stakeholders say they want "better insights into customer behaviour." How does the BA translate this vague need into elicitable requirements? What makes BI requirements different from feature requirements?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 11, Sections 11.1 and 11.2 of BABOK v3 — The Agile Perspective and The Business Intelligence Perspective. Pages 368–393. All questions scenario-based.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s9b-2">
+          <div class="session-header" onclick="toggleSession('s9b-2')">
+            <div class="session-check" onclick="toggleDone(event,'s9b-2')">✓</div>
+            <div class="session-id">9b.2</div>
+            <div class="session-title">Perspectives 11.3 IT + 11.4 Business Architecture + 11.5 BPM</div>
+            <div class="session-pages">стр. 394–439</div>
+            <div class="session-formats">
+              <span class="badge badge-brief">📄 BRIEF</span>
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">📄 Briefing Doc</div>
+              <div class="light-prompt">Focus on Chapter 11, Sections 11.3, 11.4, and 11.5 of BABOK v3 — The IT Perspective, Business Architecture Perspective, and Business Process Management Perspective. Pages 394–439.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">Focus on Chapter 11, Sections 11.3, 11.4, and 11.5 of BABOK v3. Pages 394–439.
+
+SECTION 11.3 — The Information Technology Perspective
+- How does BA work within a software development lifecycle?
+- System requirements, solution components, SDLC phases
+
+SECTION 11.4 — The Business Architecture Perspective
+- What is Business Architecture in BABOK?
+- Capability analysis, value streams, organizational design
+- How does this relate to Strategy Analysis (Ch 6)?
+
+SECTION 11.5 — The Business Process Management Perspective
+- How does BA work in a BPM or process improvement context?
+- As-is vs to-be process analysis
+- Differences from standard requirements analysis
+
+End: compare all 5 perspectives — what is the #1 unique thing about each? And: "The organization wants to improve its customer onboarding process — which perspective applies?"
+
+15 minutes.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="section-label">Chat — после подкаста</div>
+            <div class="chat-prompts">
+              <div class="chat-q" onclick="chatCopy(this)">Compare all 5 BABOK v3 Perspectives in one table: Perspective | Primary focus | Key BA role | Most used KA | Typical deliverable. Plain text table.</div>
+              <div class="chat-q" onclick="chatCopy(this)">In BABOK v3, how does the BPM Perspective (11.5) differ from the IT Perspective (11.3) when a company wants to automate a manual process? Which perspective leads, which supports, and what does the BA do differently in each?</div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Medium</span></div>
+              <div class="light-prompt">Focus on Chapter 11, Sections 11.3, 11.4, and 11.5 of BABOK v3 — IT, Business Architecture, and BPM Perspectives. Pages 394–439. All questions scenario-based: which perspective applies and what does the BA do?<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHASE 10 -->
+    <div class="phase" id="ph10">
+      <div class="phase-header" onclick="togglePhase('ph10')">
+        <div class="phase-num">10</div>
+        <div class="phase-title-block">
+          <div class="phase-label">Фаза финальная · 3 сессии</div>
+          <div class="phase-name">Интеграция + Симуляция экзамена</div>
+        </div>
+        <span class="phase-badge">Финал</span>
+        <span class="phase-toggle">▼</span>
+      </div>
+      <div class="phase-desc">Соединяй знания, тренируй слабые места, и делай полный mock exam за 1 сессию.</div>
+      <div class="phase-body" id="ph10-body">
+
+        <div class="session" id="s10-1">
+          <div class="session-header" onclick="toggleSession('s10-1')">
+            <div class="session-check" onclick="toggleDone(event,'s10-1')">✓</div>
+            <div class="session-id">10.1</div>
+            <div class="session-title">Cross-KA Integration — BACCM в действии + 5 главных ловушек</div>
+            <div class="session-pages">Весь BABOK</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="format-block">
+              <div class="format-block-header">🎙️ Podcast — Long</div>
+              <div class="prompt-box">This is an INTEGRATION session covering the full BABOK Guide v3.
+
+Do NOT cover chapters separately. Instead:
+
+1. Show how the BACCM 6 concepts appear across ALL Knowledge Areas — one example from each KA.
+
+2. Trace one end-to-end project scenario through all 6 KAs in sequence:
+   Ch3 Planning → Ch4 Elicitation → Ch5 Requirements Lifecycle → Ch6 Strategy → Ch7 Analysis and Design → Ch8 Evaluation
+   What happens at each stage? What are the handoffs?
+
+3. The 5 most commonly confused pairs on the ECBA exam:
+   - Verify vs Validate
+   - Solution Limitation (8.3) vs Enterprise Limitation (8.4)
+   - Plan BA Approach (3.1) vs Define Change Strategy (6.4)
+   - Elicitation Results Unconfirmed vs Confirmed
+   - Requirements Architecture vs Solution Architecture
+
+20 minutes. Capstone session — connect everything.
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span></div>
+              <div class="light-prompt">Cross-chapter integration quiz covering all 6 Knowledge Areas of BABOK v3. Focus on connections between chapters, the 5 most confused concept pairs (Verify vs Validate, Solution vs Enterprise Limitations, etc.), and end-to-end project scenarios that span multiple KAs.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s10-2">
+          <div class="session-header" onclick="toggleSession('s10-2')">
+            <div class="session-check" onclick="toggleDone(event,'s10-2')">✓</div>
+            <div class="session-id">10.2</div>
+            <div class="session-title">Weak Areas — работа с пробелами</div>
+            <div class="session-pages">По результатам квизов</div>
+            <div class="session-formats">
+              <span class="badge badge-podcast">🎙️ LONG</span>
+              <span class="badge badge-quiz">❓ QUIZ</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="tip-box"><span class="tip-icon">💡</span><span>Посмотри все вопросы из предыдущих квизов где ошиблась. Сгруппируй по главе. Вставь промпт ниже, заменив [TOPIC] и [CHAPTER].</span></div>
+
+            <div class="format-block" style="margin-top:14px;">
+              <div class="format-block-header">🎙️ Podcast — Long · Targeted</div>
+              <div class="prompt-box">I need a deep-dive on [TOPIC] from BABOK v3 Chapter [X].
+
+1. Re-explain [TOPIC] from scratch with a simple analogy
+2. Give 3 concrete examples from different industries
+3. Tell me what BABOK v3 specifically says vs what people commonly assume
+4. Walk through a scenario where this concept comes up on an ECBA exam
+
+Example: replace [TOPIC] with "Verify vs Validate Requirements" and [CHAPTER] with "7"
+<button class="copy-btn" onclick="bigCopy(this)">COPY</button></div>
+            </div>
+
+            <div class="format-block">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span> · Targeted</div>
+              <div class="light-prompt">Focus only on [TOPIC] from BABOK v3 Chapter [X]. Generate questions testing this specific concept only, from different angles: definition, application, scenario, and "what is wrong with this approach."
+
+Replace [TOPIC] and [CHAPTER] with your weak area.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="session" id="s10-3">
+          <div class="session-header" onclick="toggleSession('s10-3')">
+            <div class="session-check" onclick="toggleDone(event,'s10-3')">✓</div>
+            <div class="session-id">10.3</div>
+            <div class="session-title">🎯 FULL MOCK EXAM — 50 вопросов, формат ECBA</div>
+            <div class="session-pages">Весь BABOK v3</div>
+            <div class="session-formats">
+              <span class="badge badge-quiz">❓ EXAM</span>
+            </div>
+            <div class="session-expand">▾</div>
+          </div>
+          <div class="session-body">
+            <div class="tip-box"><span class="tip-icon">⏱️</span><span>Установи таймер на 2 часа 30 минут. Отвечай на все 50 вопросов прежде чем смотреть ответы. Имитируй реальный экзамен.</span></div>
+            <div class="format-block" style="margin-top:14px;">
+              <div class="format-block-header">❓ Quiz <span class="diff-hint">· Hard</span> — Full Mock Exam</div>
+              <div class="light-prompt">Generate a complete 50-question ECBA mock exam based on BABOK Guide v3. Distribute questions by official exam weights: Ch3 Planning 12%, Ch4 Elicitation 20%, Ch5 Requirements Lifecycle 15%, Ch6 Strategy 15%, Ch7 Analysis and Design 23%, Ch8 Solution Evaluation 15%. Mix: 30% recall, 50% scenario-based, 20% technique selection. Show all 50 questions first, then answer key separately.<button class="light-copy-btn" onclick="lightCopy(this)">COPY</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function togglePhase(id) {
+    const phase = document.getElementById(id);
+    const body = document.getElementById(id + '-body');
+    phase.classList.toggle('collapsed');
+    body.classList.toggle('hidden');
+  }
+
+  function toggleSession(id) {
+    const session = document.getElementById(id);
+    session.classList.toggle('open');
+  }
+
+  function toggleDone(event, id) {
+    event.stopPropagation();
+    const session = document.getElementById(id);
+    session.classList.toggle('done');
+    updateProgress();
+    saveProgress();
+  }
+
+  function bigCopy(btn) {
+    const box = btn.parentElement;
+    const clone = box.cloneNode(true);
+    clone.querySelector('.copy-btn').remove();
+    const text = clone.innerText.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'COPIED!';
+      setTimeout(() => btn.textContent = 'COPY', 1500);
+    });
+  }
+
+  function lightCopy(btn) {
+    const box = btn.parentElement;
+    const clone = box.cloneNode(true);
+    clone.querySelector('.light-copy-btn').remove();
+    const text = clone.innerText.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'COPIED!';
+      setTimeout(() => btn.textContent = 'COPY', 1500);
+    });
+  }
+
+  function chatCopy(el) {
+    const text = el.innerText.replace('COPY','').trim();
+    navigator.clipboard.writeText(text).then(() => {
+      el.style.background = '#e8f4e8';
+      setTimeout(() => el.style.background = '', 700);
+    });
+  }
+
+  function updateProgress() {
+    const total = document.querySelectorAll('.session-check').length;
+    const done = document.querySelectorAll('.session.done').length;
+    const pct = Math.round((done / total) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = pct + '%';
+  }
+
+  function saveProgress() {
+    const done = [];
+    document.querySelectorAll('.session.done').forEach(s => done.push(s.id));
+    try { localStorage.setItem('ecba_v2', JSON.stringify(done)); } catch(e) {}
+  }
+
+  function loadProgress() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('ecba_v2') || '[]');
+      saved.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('done');
+      });
+      updateProgress();
+    } catch(e) {}
+  }
+
+  loadProgress();
+</script>
+</body>
+</html>
