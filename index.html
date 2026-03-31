@@ -466,6 +466,126 @@
     .session-pages { display: none; }
     .legend-grid { grid-template-columns: 1fr; }
   }
+
+  /* QUIZ RESULTS PANEL */
+  .quiz-results-panel {
+    margin-top: 18px;
+    border-top: 1px dashed var(--border);
+    padding-top: 14px;
+  }
+  .quiz-results-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .quiz-results-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .quiz-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .quiz-field label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+  }
+  .quiz-field input {
+    width: 72px;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--paper);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    text-align: center;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .quiz-field input:focus { border-color: var(--moss); }
+  .quiz-score-display {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 140px;
+  }
+  .quiz-score-top {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .quiz-score-pct {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--moss);
+  }
+  .quiz-score-pct.empty { color: var(--muted); font-size: 14px; }
+  .quiz-score-fraction {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .quiz-bar-wrap {
+    height: 6px;
+    background: var(--cream);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .quiz-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    width: 0%;
+    transition: width .4s ease, background .3s;
+    background: var(--moss);
+  }
+
+  /* PHASE HEADER SCORE BAR */
+  .phase-score-wrap {
+    display: none;
+    align-items: center;
+    gap: 7px;
+    margin-left: 4px;
+  }
+  .phase-score-wrap.visible { display: flex; }
+  .phase-score-pct-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--moss);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .phase-score-bar-wrap {
+    width: 56px;
+    height: 5px;
+    background: rgba(0,0,0,.08);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .phase-score-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--moss);
+    width: 0%;
+    transition: width .4s ease;
+  }
+
+  /* PHASE ALL-DONE: green circle */
+  .phase.all-done .phase-num {
+    background: var(--moss);
+  }
 </style>
 </head>
 <body>
@@ -2418,12 +2538,28 @@ Replace [TOPIC] and [CHAPTER] with your weak area.<button class="light-copy-btn"
     session.classList.toggle('open');
   }
 
+  function getPhaseIdForSession(sessionEl) {
+    return sessionEl.closest('.phase') ? sessionEl.closest('.phase').id : null;
+  }
+
   function toggleDone(event, id) {
     event.stopPropagation();
     const session = document.getElementById(id);
     session.classList.toggle('done');
     updateProgress();
+    const phaseEl = session.closest('.phase');
+    if (phaseEl) checkPhaseDone(phaseEl);
     saveProgress();
+  }
+
+  function checkPhaseDone(phaseEl) {
+    const sessions = phaseEl.querySelectorAll('.session');
+    const doneSessions = phaseEl.querySelectorAll('.session.done');
+    if (sessions.length > 0 && doneSessions.length === sessions.length) {
+      phaseEl.classList.add('all-done');
+    } else {
+      phaseEl.classList.remove('all-done');
+    }
   }
 
   function bigCopy(btn) {
@@ -2464,10 +2600,127 @@ Replace [TOPIC] and [CHAPTER] with your weak area.<button class="light-copy-btn"
     document.getElementById('progressPct').textContent = pct + '%';
   }
 
+  /* ── QUIZ RESULTS ── */
+
+  function injectQuizPanels() {
+    document.querySelectorAll('.session').forEach(sessionEl => {
+      const titleEl = sessionEl.querySelector('.session-title');
+      if (!titleEl) return;
+      if (!titleEl.textContent.toLowerCase().includes('review')) return;
+
+      const sid = sessionEl.id;
+      const phaseEl = sessionEl.closest('.phase');
+      const phaseId = phaseEl ? phaseEl.id : null;
+
+      // Inject score bar into phase header (once per phase)
+      if (phaseId && !phaseEl.querySelector('.phase-score-wrap')) {
+        const toggle = phaseEl.querySelector('.phase-toggle');
+        if (toggle) {
+          const scoreWrap = document.createElement('div');
+          scoreWrap.className = 'phase-score-wrap';
+          scoreWrap.id = phaseId + '-score-wrap';
+          scoreWrap.innerHTML =
+            '<span class="phase-score-pct-label" id="' + phaseId + '-score-label">0%</span>' +
+            '<div class="phase-score-bar-wrap"><div class="phase-score-bar-fill" id="' + phaseId + '-score-bar"></div></div>';
+          toggle.insertAdjacentElement('beforebegin', scoreWrap);
+        }
+      }
+
+      // Inject quiz panel into session body
+      const body = sessionEl.querySelector('.session-body');
+      if (body && !body.querySelector('.quiz-results-panel')) {
+        const panel = document.createElement('div');
+        panel.className = 'quiz-results-panel';
+        panel.innerHTML =
+          '<div class="quiz-results-label">Quiz Results</div>' +
+          '<div class="quiz-results-row">' +
+            '<div class="quiz-field">' +
+              '<label>Total</label>' +
+              '<input type="number" class="quiz-total" data-sid="' + sid + '" min="0" placeholder="—">' +
+            '</div>' +
+            '<div class="quiz-field">' +
+              '<label>Correct</label>' +
+              '<input type="number" class="quiz-correct" data-sid="' + sid + '" min="0" placeholder="—">' +
+            '</div>' +
+            '<div class="quiz-score-display">' +
+              '<div class="quiz-score-top">' +
+                '<span class="quiz-score-pct empty" id="' + sid + '-pct">—</span>' +
+                '<span class="quiz-score-fraction" id="' + sid + '-frac"></span>' +
+              '</div>' +
+              '<div class="quiz-bar-wrap"><div class="quiz-bar-fill" id="' + sid + '-bar"></div></div>' +
+            '</div>' +
+          '</div>';
+        body.appendChild(panel);
+
+        // Bind input events
+        panel.querySelectorAll('input').forEach(inp => {
+          inp.addEventListener('input', () => calcQuizScore(sid, phaseId));
+        });
+      }
+    });
+  }
+
+  function calcQuizScore(sid, phaseId) {
+    const sessionEl = document.getElementById(sid);
+    const totalInp = sessionEl.querySelector('.quiz-total');
+    const correctInp = sessionEl.querySelector('.quiz-correct');
+    const pctEl = document.getElementById(sid + '-pct');
+    const fracEl = document.getElementById(sid + '-frac');
+    const barEl = document.getElementById(sid + '-bar');
+
+    const total = parseInt(totalInp.value) || 0;
+    const correct = parseInt(correctInp.value) || 0;
+
+    if (total > 0) {
+      const pct = Math.round((Math.min(correct, total) / total) * 100);
+      pctEl.textContent = pct + '%';
+      pctEl.classList.remove('empty');
+      fracEl.textContent = correct + '/' + total;
+      barEl.style.width = pct + '%';
+      // Color: red < 60, amber 60-79, green >= 80
+      barEl.style.background = pct >= 80 ? 'var(--moss)' : pct >= 60 ? '#b8860b' : '#c0440a';
+
+      // Update phase header bar
+      if (phaseId) {
+        const phaseScoreWrap = document.getElementById(phaseId + '-score-wrap');
+        const phaseLabel = document.getElementById(phaseId + '-score-label');
+        const phaseBar = document.getElementById(phaseId + '-score-bar');
+        if (phaseScoreWrap) {
+          phaseScoreWrap.classList.add('visible');
+          phaseLabel.textContent = pct + '%';
+          phaseBar.style.width = pct + '%';
+          phaseBar.style.background = pct >= 80 ? 'var(--moss)' : pct >= 60 ? '#b8860b' : '#c0440a';
+          phaseLabel.style.color = pct >= 80 ? 'var(--moss)' : pct >= 60 ? '#b8860b' : '#c0440a';
+        }
+      }
+    } else {
+      pctEl.textContent = '—';
+      pctEl.classList.add('empty');
+      fracEl.textContent = '';
+      barEl.style.width = '0%';
+    }
+
+    saveProgress();
+  }
+
+  /* ── PERSISTENCE ── */
+
   function saveProgress() {
     const done = [];
     document.querySelectorAll('.session.done').forEach(s => done.push(s.id));
-    try { localStorage.setItem('ecba_v2', JSON.stringify(done)); } catch(e) {}
+    const quizData = {};
+    document.querySelectorAll('.quiz-results-panel').forEach(panel => {
+      const totalInp = panel.querySelector('.quiz-total');
+      const correctInp = panel.querySelector('.quiz-correct');
+      const sid = totalInp ? totalInp.dataset.sid : null;
+      if (sid && (totalInp.value || correctInp.value)) {
+        quizData[sid] = { total: totalInp.value, correct: correctInp.value };
+      }
+    });
+    try {
+      localStorage.setItem('ecba_v2', JSON.stringify(done));
+      localStorage.setItem('ecba_quiz', JSON.stringify(quizData));
+    } catch(e) {}
   }
 
   function loadProgress() {
@@ -2478,9 +2731,29 @@ Replace [TOPIC] and [CHAPTER] with your weak area.<button class="light-copy-btn"
         if (el) el.classList.add('done');
       });
       updateProgress();
+      // Re-check phase done states
+      document.querySelectorAll('.phase').forEach(ph => checkPhaseDone(ph));
+    } catch(e) {}
+
+    // Restore quiz scores after panels are injected
+    try {
+      const quizData = JSON.parse(localStorage.getItem('ecba_quiz') || '{}');
+      Object.entries(quizData).forEach(([sid, vals]) => {
+        const sessionEl = document.getElementById(sid);
+        if (!sessionEl) return;
+        const totalInp = sessionEl.querySelector('.quiz-total');
+        const correctInp = sessionEl.querySelector('.quiz-correct');
+        if (totalInp && correctInp) {
+          totalInp.value = vals.total || '';
+          correctInp.value = vals.correct || '';
+          const phaseEl = sessionEl.closest('.phase');
+          calcQuizScore(sid, phaseEl ? phaseEl.id : null);
+        }
+      });
     } catch(e) {}
   }
 
+  injectQuizPanels();
   loadProgress();
 </script>
 </body>
